@@ -55,8 +55,46 @@ namespace StickyNotes
                     return;
                 }
 
+                // Self-install to %LOCALAPPDATA%\StickyNotes\StickyNotes.exe so the Downloads folder can be deleted safely
+                if (!isAutostart && TryRelocateToAppData())
+                {
+                    return;
+                }
+
                 var app = new StickyNotesApp();
                 app.Run(isAutostart);
+            }
+        }
+
+        private static bool TryRelocateToAppData()
+        {
+            try
+            {
+                string currentExe = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
+                string targetExe = StartupManager.InstalledExePath;
+
+                if (string.Equals(
+                    System.IO.Path.GetFullPath(currentExe),
+                    System.IO.Path.GetFullPath(targetExe),
+                    StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+
+                string targetDir = System.IO.Path.GetDirectoryName(targetExe);
+                if (!System.IO.Directory.Exists(targetDir))
+                {
+                    System.IO.Directory.CreateDirectory(targetDir);
+                }
+
+                System.IO.File.Copy(currentExe, targetExe, true);
+                System.Diagnostics.Process.Start(targetExe);
+                return true;
+            }
+            catch
+            {
+                // If relocation fails (e.g. permissions), continue running from current path
+                return false;
             }
         }
 

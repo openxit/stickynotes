@@ -296,6 +296,17 @@ namespace StickyNotes
         private const string RunRegistryPath = @"Software\Microsoft\Windows\CurrentVersion\Run";
         private const string AppRunName = "StickyNotesApp";
 
+        public static string InstalledExePath
+        {
+            get
+            {
+                return System.IO.Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    "StickyNotes",
+                    "StickyNotes.exe");
+            }
+        }
+
         public static bool IsStartupEnabled()
         {
             try
@@ -320,8 +331,10 @@ namespace StickyNotes
                     if (key == null) return;
                     if (enable)
                     {
-                        string exePath = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
-                        key.SetValue(AppRunName, "\"" + exePath + "\" --autostart");
+                        string targetExe = System.IO.File.Exists(InstalledExePath)
+                            ? InstalledExePath
+                            : System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
+                        key.SetValue(AppRunName, "\"" + targetExe + "\" --autostart");
                     }
                     else
                     {

@@ -47,4 +47,5 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 $SizeKB = [math]::Round((Get-Item $OutExe).Length / 1024, 1)
+Copy-Item -Path (Join-Path $Root "UninstallStickyNotes.bat") -Destination (Join-Path $DistDir "UninstallStickyNotes.bat") -Force
 Write-Host "Build succeeded: $OutExe ($SizeKB KB)"

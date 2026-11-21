@@ -20,9 +20,16 @@ Focus any application (like **Visual Studio Code**, **Chrome**, or **Terminal**)
 - **Global Hotkey & System Tray**: Default `Ctrl + Alt + N` (customizable in Settings), optional launch on Windows startup, and automatic saving to `%APPDATA%\StickyNotes\notes.json`.
 - **Zero Dependencies**: Native ~54 KB `.exe` built on Windows .NET Framework 4.x WPF.
 
-## Download
+## Download & Install
 
-Download the latest `StickyNotes.exe` from the [Releases](https://github.com/openxit/stickynotes/releases) page and run it. No installer or extra runtime required.
+Download `StickyNotes.exe` from the [Releases](https://github.com/openxit/stickynotes/releases) page and run it.
+
+- On first launch, `StickyNotes.exe` automatically copies itself to `%LOCALAPPDATA%\StickyNotes\StickyNotes.exe` and registers itself for Windows startup, so you can safely delete the downloaded file from your `Downloads` folder.
+- All notes and settings are stored in `%APPDATA%\StickyNotes\notes.json`.
+
+## Uninstall
+
+Download and run `UninstallStickyNotes.bat` from the [Releases](https://github.com/openxit/stickynotes/releases) page to stop the app, remove Windows autostart, and delete both `StickyNotes.exe` and all saved notes.
 
 ## Build from Source
 
