@@ -29,7 +29,7 @@ Download `StickyNotes.exe` from the [Releases](https://github.com/openxit/sticky
 
 ## Uninstall
 
-Download and run `UninstallStickyNotes.bat` from the [Releases](https://github.com/openxit/stickynotes/releases) page to stop the app, remove Windows autostart, and delete both `StickyNotes.exe` and all saved notes.
+Download and run `UninstallStickyNotes.exe` from the [Releases](https://github.com/openxit/stickynotes/releases) page to stop the app, remove Windows autostart, and delete both `StickyNotes.exe` and all saved notes.
 
 ## Build from Source
 
