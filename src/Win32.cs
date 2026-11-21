@@ -5,7 +5,7 @@ using System.Text;
 
 namespace StickyNotes
 {
-    internal static class Win32
+    public static class Win32
     {
         public const int WM_HOTKEY = 0x0312;
 
