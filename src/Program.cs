@@ -39,6 +39,12 @@ namespace StickyNotes
                 }
             }
 
+            // Self-install to %LOCALAPPDATA%\StickyNotes\StickyNotes.exe before acquiring the single-instance mutex
+            if (!isAutostart && TryRelocateToAppData())
+            {
+                return;
+            }
+
             bool createdNew;
             using (var mutex = new Mutex(true, MutexName, out createdNew))
             {
@@ -52,12 +58,6 @@ namespace StickyNotes
                             MessageBoxButton.OK,
                             MessageBoxImage.Information);
                     }
-                    return;
-                }
-
-                // Self-install to %LOCALAPPDATA%\StickyNotes\StickyNotes.exe so the Downloads folder can be deleted safely
-                if (!isAutostart && TryRelocateToAppData())
-                {
                     return;
                 }
 
