@@ -85,11 +85,19 @@ namespace StickyNotes
         [DataMember(Order = 3)]
         public string DefaultTheme { get; set; }
 
+        [DataMember(Order = 4)]
+        public bool StartupInitialized { get; set; }
+
+        [DataMember(Order = 5)]
+        public bool HasShownWelcome { get; set; }
+
         public AppSettings()
         {
             HotkeyModifiers = Win32.MOD_CONTROL | Win32.MOD_ALT;
             HotkeyKey = 0x4E; // N
             DefaultTheme = "Butter";
+            StartupInitialized = false;
+            HasShownWelcome = false;
         }
     }
 

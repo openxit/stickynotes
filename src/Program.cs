@@ -24,27 +24,43 @@ namespace StickyNotes
         private bool _savePending;
 
         [STAThread]
-        public static void Main()
+        public static void Main(string[] args)
         {
+            bool isAutostart = false;
+            if (args != null)
+            {
+                foreach (var a in args)
+                {
+                    if (string.Equals(a, "--autostart", StringComparison.OrdinalIgnoreCase))
+                    {
+                        isAutostart = true;
+                        break;
+                    }
+                }
+            }
+
             bool createdNew;
             using (var mutex = new Mutex(true, MutexName, out createdNew))
             {
                 if (!createdNew)
                 {
-                    MessageBox.Show(
-                        "StickyNotes is already running in the system tray.",
-                        "StickyNotes",
-                        MessageBoxButton.OK,
-                        MessageBoxImage.Information);
+                    if (!isAutostart)
+                    {
+                        MessageBox.Show(
+                            "StickyNotes is already running in the system tray.",
+                            "StickyNotes",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Information);
+                    }
                     return;
                 }
 
                 var app = new StickyNotesApp();
-                app.Run();
+                app.Run(isAutostart);
             }
         }
 
-        private void Run()
+        private void Run(bool isAutostart)
         {
             _wpfApp = new Application
             {
@@ -52,6 +68,18 @@ namespace StickyNotes
             };
 
             _store = Storage.Load();
+
+            // Enable Windows autostart by default on first run; keep exe path fresh if enabled
+            if (!_store.Settings.StartupInitialized)
+            {
+                StartupManager.SetStartup(true);
+                _store.Settings.StartupInitialized = true;
+                Storage.Save(_store);
+            }
+            else if (StartupManager.IsStartupEnabled())
+            {
+                StartupManager.SetStartup(true);
+            }
 
             _saveDebounceTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(350) };
             _saveDebounceTimer.Tick += (s, e) =>
@@ -76,8 +104,10 @@ namespace StickyNotes
                 _trackerTimer.Tick += (ts, te) => SyncWindowsWithDesktop();
                 _trackerTimer.Start();
 
-                if (_store.Notes.Count == 0)
+                if (!isAutostart && !_store.Settings.HasShownWelcome)
                 {
+                    _store.Settings.HasShownWelcome = true;
+                    Storage.Save(_store);
                     string hk = SettingsWindow.FormatHotkey(_store.Settings.HotkeyModifiers, _store.Settings.HotkeyKey);
                     _tray.ShowBalloon("StickyNotes is ready", "Focus any app (e.g. VS Code) and press " + hk + " to pin a sticky note.");
                 }

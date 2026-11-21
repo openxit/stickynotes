@@ -10,9 +10,6 @@ namespace StickyNotes
 {
     public class SettingsWindow : Window
     {
-        private const string RunRegistryPath = @"Software\Microsoft\Windows\CurrentVersion\Run";
-        private const string AppRunName = "StickyNotesApp";
-
         private readonly NotesStoreData _store;
         private readonly Action _onHotkeyChanged;
         private readonly Action _onSaveRequested;
@@ -125,13 +122,13 @@ namespace StickyNotes
             _startupCheck = new CheckBox
             {
                 Content = "Launch StickyNotes automatically when Windows starts",
-                IsChecked = IsStartupEnabled(),
+                IsChecked = StartupManager.IsStartupEnabled(),
                 FontFamily = new FontFamily("Segoe UI"),
                 FontSize = 12.5,
                 Margin = new Thickness(0, 2, 0, 16)
             };
-            _startupCheck.Checked += (s, e) => SetStartup(true);
-            _startupCheck.Unchecked += (s, e) => SetStartup(false);
+            _startupCheck.Checked += (s, e) => StartupManager.SetStartup(true);
+            _startupCheck.Unchecked += (s, e) => StartupManager.SetStartup(false);
             root.Children.Add(_startupCheck);
 
             // Bound Notes list
@@ -292,7 +289,14 @@ namespace StickyNotes
             return string.Join(" + ", parts);
         }
 
-        private static bool IsStartupEnabled()
+    }
+
+    public static class StartupManager
+    {
+        private const string RunRegistryPath = @"Software\Microsoft\Windows\CurrentVersion\Run";
+        private const string AppRunName = "StickyNotesApp";
+
+        public static bool IsStartupEnabled()
         {
             try
             {
@@ -307,7 +311,7 @@ namespace StickyNotes
             }
         }
 
-        private static void SetStartup(bool enable)
+        public static void SetStartup(bool enable)
         {
             try
             {
@@ -317,7 +321,7 @@ namespace StickyNotes
                     if (enable)
                     {
                         string exePath = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
-                        key.SetValue(AppRunName, "\"" + exePath + "\"");
+                        key.SetValue(AppRunName, "\"" + exePath + "\" --autostart");
                     }
                     else
                     {
