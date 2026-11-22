@@ -381,9 +381,9 @@ namespace StickyNotes
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // Ignore icon extraction errors
+                System.Diagnostics.Trace.TraceWarning("LoadAppIcon failed for {0}: {1}", Data.ExePath, ex.Message);
             }
             _appIconImage.Visibility = Visibility.Collapsed;
         }

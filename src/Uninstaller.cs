@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
@@ -25,6 +26,8 @@ namespace StickyNotesUninstaller
                 return;
             }
 
+            var warnings = new List<string>();
+
             // 1. Stop running StickyNotes.exe instances
             try
             {
@@ -35,15 +38,15 @@ namespace StickyNotesUninstaller
                         proc.Kill();
                         proc.WaitForExit(3000);
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        // Ignore per-process errors
+                        warnings.Add("Could not stop process: " + ex.Message);
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // Ignore enumeration errors
+                warnings.Add("Could not enumerate running processes: " + ex.Message);
             }
 
             // 2. Remove Windows autostart registry entry
@@ -57,20 +60,20 @@ namespace StickyNotesUninstaller
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // Ignore registry errors
+                warnings.Add("Could not remove startup entry: " + ex.Message);
             }
 
             // 3. Delete installed exe directory (%LOCALAPPDATA%\StickyNotes)
-            TryDeleteDirectory(Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "StickyNotes"));
+            TryDeleteDirectory(
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "StickyNotes"),
+                warnings);
 
             // 4. Delete saved notes & settings (%APPDATA%\StickyNotes)
-            TryDeleteDirectory(Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                "StickyNotes"));
+            TryDeleteDirectory(
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "StickyNotes"),
+                warnings);
 
             // 5. Delete StickyNotes.exe next to the uninstaller if present
             try
@@ -85,19 +88,30 @@ namespace StickyNotesUninstaller
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // Ignore
+                warnings.Add("Could not delete sibling StickyNotes.exe: " + ex.Message);
             }
 
-            MessageBox.Show(
-                "StickyNotes and all saved notes have been completely removed.",
-                "Uninstall StickyNotes",
-                MessageBoxButton.OK,
-                MessageBoxImage.Information);
+            if (warnings.Count > 0)
+            {
+                MessageBox.Show(
+                    "StickyNotes was uninstalled with some warnings:\n\n" + string.Join("\n", warnings),
+                    "Uninstall StickyNotes",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+            }
+            else
+            {
+                MessageBox.Show(
+                    "StickyNotes and all saved notes have been completely removed.",
+                    "Uninstall StickyNotes",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+            }
         }
 
-        private static void TryDeleteDirectory(string path)
+        private static void TryDeleteDirectory(string path, List<string> warnings)
         {
             try
             {
@@ -106,9 +120,9 @@ namespace StickyNotesUninstaller
                     Directory.Delete(path, true);
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // Ignore locked/missing files
+                warnings.Add(string.Format("Could not remove '{0}': {1}", path, ex.Message));
             }
         }
     }

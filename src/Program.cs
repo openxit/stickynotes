@@ -242,7 +242,6 @@ namespace StickyNotes
             StickyNoteData existing = FindNoteByProcessKey(activeApp.ProcessKey);
             if (existing == null)
             {
-                // Create a brand new note bound to this app
                 var newNote = CreateNoteForApp(activeApp);
                 _store.Notes.Add(newNote);
                 RequestSave();

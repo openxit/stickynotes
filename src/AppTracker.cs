@@ -193,9 +193,9 @@ namespace StickyNotes
                     return info.ProductName.Trim();
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // Fallback below
+                Trace.TraceWarning("GetFriendlyAppName failed for {0}: {1}", exePath, ex.Message);
             }
             return Path.GetFileNameWithoutExtension(fileName);
         }

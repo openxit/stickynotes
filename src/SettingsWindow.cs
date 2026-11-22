@@ -342,9 +342,9 @@ namespace StickyNotes
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // Ignore registry permission errors
+                System.Diagnostics.Trace.TraceWarning("StartupManager.SetStartup failed: {0}", ex.Message);
             }
         }
     }

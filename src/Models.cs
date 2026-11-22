@@ -198,9 +198,9 @@ namespace StickyNotes
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // Ignore transient IO errors on auto-save
+                System.Diagnostics.Trace.TraceWarning("Storage.Save failed: {0}", ex.Message);
             }
         }
     }
