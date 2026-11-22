@@ -124,22 +124,36 @@ namespace StickyNotes
             "StickyNotes");
 
         private static readonly string StorePath = Path.Combine(AppDataDir, "notes.json");
+        private static readonly string BackupPath = Path.Combine(AppDataDir, "notes.json.bak");
 
         public static NotesStoreData Load()
         {
+            var data = TryLoadFile(StorePath) ?? TryLoadFile(BackupPath);
+            return data ?? new NotesStoreData();
+        }
+
+        private static NotesStoreData TryLoadFile(string path)
+        {
             try
             {
-                if (!File.Exists(StorePath))
+                if (!File.Exists(path))
                 {
-                    return new NotesStoreData();
+                    return null;
                 }
 
-                byte[] bytes = File.ReadAllBytes(StorePath);
-                using (var ms = new MemoryStream(bytes))
+                byte[] bytes = File.ReadAllBytes(path);
+                // Strip UTF-8 BOM (0xEF, 0xBB, 0xBF) if present so DataContractJsonSerializer never chokes on it
+                int offset = 0;
+                if (bytes.Length >= 3 && bytes[0] == 0xEF && bytes[1] == 0xBB && bytes[2] == 0xBF)
+                {
+                    offset = 3;
+                }
+
+                using (var ms = new MemoryStream(bytes, offset, bytes.Length - offset))
                 {
                     var serializer = new DataContractJsonSerializer(typeof(NotesStoreData));
                     var data = serializer.ReadObject(ms) as NotesStoreData;
-                    if (data == null) return new NotesStoreData();
+                    if (data == null) return null;
                     if (data.Settings == null) data.Settings = new AppSettings();
                     if (data.Notes == null) data.Notes = new List<StickyNoteData>();
                     foreach (var note in data.Notes)
@@ -154,7 +168,7 @@ namespace StickyNotes
             }
             catch
             {
-                return new NotesStoreData();
+                return null;
             }
         }
 
@@ -171,12 +185,12 @@ namespace StickyNotes
                 {
                     var serializer = new DataContractJsonSerializer(typeof(NotesStoreData));
                     serializer.WriteObject(ms, data);
-                    string json = Encoding.UTF8.GetString(ms.ToArray());
+                    byte[] utf8NoBom = ms.ToArray();
                     string tempPath = StorePath + ".tmp";
-                    File.WriteAllText(tempPath, json, Encoding.UTF8);
+                    File.WriteAllBytes(tempPath, utf8NoBom);
                     if (File.Exists(StorePath))
                     {
-                        File.Replace(tempPath, StorePath, null);
+                        File.Replace(tempPath, StorePath, BackupPath);
                     }
                     else
                     {

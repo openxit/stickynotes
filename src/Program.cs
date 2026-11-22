@@ -151,6 +151,15 @@ namespace StickyNotes
                 }
             };
 
+            _wpfApp.SessionEnding += (s, e) =>
+            {
+                if (_savePending)
+                {
+                    _savePending = false;
+                    Storage.Save(_store);
+                }
+            };
+
             _wpfApp.Exit += (s, e) =>
             {
                 if (_savePending)
